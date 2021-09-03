@@ -1,0 +1,311 @@
+-- 3.1
+SELECT TITLE
+FROM FILM;
+-- 3.2
+SELECT FIRST_NAME AS "First Name",
+    LAST_NAME AS "Last Name"
+FROM ACTOR;
+-- 3.3
+SELECT COUNT(*)
+FROM INVENTORY;
+-- 3.4
+SELECT ACTOR_ID,
+    FIRST_NAME,
+    LAST_NAME,
+    LAST_UPDATE
+FROM ACTOR;
+-- 3.5
+SELECT FIRST_NAME,
+    LENGTH(FIRST_NAME) AS "length"
+FROM CUSTOMER;
+-- 3.6
+SELECT FIRST_NAME,
+    LAST_NAME,
+    UPPER(LEFT (FIRST_NAME, 1) || LEFT (LAST_NAME, 1)) AS "initials"
+FROM CUSTOMER;
+-- 3.7
+SELECT RENTAL_RATE,
+    REPLACEMENT_COST,
+    CEIL(REPLACEMENT_COST / RENTAL_RATE) "# rentals to break-even"
+FROM FILM;
+-- 3.8
+SELECT TITLE,
+    RATING
+FROM FILM
+WHERE RATING = 'G';
+-- 3.9
+SELECT TITLE,
+    LENGTH
+FROM FILM
+WHERE LENGTH > 2 * 60;
+-- 3.10
+SELECT RENTAL_ID,
+    RENTAL_DATE
+FROM RENTAL
+WHERE RENTAL_DATE < '2005-06-01';
+-- 3.11
+SELECT RENTAL_RATE,
+    REPLACEMENT_COST,
+    CEIL(REPLACEMENT_COST / RENTAL_RATE) "# rentals to break-even"
+FROM FILM
+WHERE CEIL(REPLACEMENT_COST / RENTAL_RATE) > 30;
+-- 3.12
+SELECT RENTAL_ID,
+    RENTAL_DATE
+FROM RENTAL
+WHERE CUSTOMER_ID = 388
+    AND RENTAL_DATE >= '2005-01-01'
+    AND RENTAL_DATE < '2006-01-01';
+-- 3.13
+SELECT TITLE,
+    RENTAL_DURATION,
+    LENGTH
+FROM FILM
+WHERE LENGTH < 60;
+SELECT TITLE,
+    RENTAL_DURATION,
+    LENGTH
+FROM FILM
+WHERE NOT LENGTH > 60;
+-- 3.14
+SELECT TITLE,
+    RATING
+FROM FILM
+WHERE RATING != 'G'
+    OR RATING != 'PG';
+-- this query is wrong because it will always evaluate both cases and both are never true at the same time, hence almost all records match.
+-- it does not match records where rating is NULL
+-- 3.15
+SELECT RENTAL_ID,
+    RENTAL_DATE,
+    RETURN_DATE
+FROM RENTAL
+WHERE RETURN_DATE > RENTAL_DATE
+    OR RETURN_DATE = RENTAL_DATE
+    OR RETURN_DATE < RENTAL_DATE;
+-- it returns almost all records except those for which rental_date is NULL
+-- Note that you need to use 'is' or 'is not' to check against _null_ because it uses three valued logic (T/F/NULL).
+-- 3.16
+SELECT RENTAL_ID,
+    RETURN_DATE
+FROM RENTAL
+WHERE RETURN_DATE IS NULL;
+-- 3.17
+SELECT TITLE,
+    RATING
+FROM FILM
+WHERE RATING IS NULL
+    OR RATING <> 'G'
+    AND RATING <> 'PG';
+-- or
+SELECT TITLE,
+    RATING
+FROM FILM
+WHERE RATING IS NULL
+    OR NOT (
+        RATING = 'G'
+        OR RATING = 'PG'
+    ) -- Note that 'ilike' is a postgres specific case-insenstive pattern match
+    -- Note that 'SIMILAR TO' allows so pattern match against regular expressions
+    -- https://www.postgresql.org/docs/current/functions-matching.html
+    -- 3.18
+SELECT TITLE,
+    RATING
+FROM FILM
+WHERE RATING IN (
+        'PG',
+        'G',
+        'PG-13'
+    );
+-- 3.19
+SELECT TITLE,
+    LENGTH
+FROM FILM
+WHERE LENGTH BETWEEN 90 AND 120;
+-- 3.20
+SELECT TITLE
+FROM FILM
+WHERE TITLE LIKE '%GRAFFITI';
+-- 3.21
+SELECT TITLE,
+    RATING
+FROM FILM
+WHERE RATING NOT IN ('G', 'PG');
+-- does not contain null results
+-- 3.22
+SELECT FIRST_NAME,
+    LAST_NAME
+FROM CUSTOMER
+ORDER BY LAST_NAME DESC;
+-- 3.23
+SELECT COUNTRY_ID,
+    CITY
+FROM CITY
+ORDER BY COUNTRY_ID,
+    CITY;
+-- 3.24
+SELECT CONCAT_WS(' ', FIRST_NAME, LAST_NAME) AS FULL_NAME,
+    LENGTH(CONCAT_WS(' ', FIRST_NAME, LAST_NAME)) AS LEN
+FROM ACTOR
+ORDER BY LEN DESC;
+-- 3.25 Describe the difference between ORDER BY x, y DESC and ORDER BY x DESC, y DESC
+-- order by x,y DESC == order by x asc, y desc
+-- 3.26
+SELECT RENTAL_ID,
+    DATE_PART('hour', RENTAL_DATE) AS "rental hour"
+FROM RENTAL
+WHERE DATE_PART('hour', RENTAL_DATE) >= 22;
+-- 3.27
+SELECT PAYMENT_ID,
+    PAYMENT_DATE
+FROM PAYMENT
+ORDER BY PAYMENT_DATE DESC
+LIMIT 3;
+-- 3.28
+SELECT TITLE,
+    "length",
+    RATING
+FROM FILM
+WHERE RATING <> 'R'
+    AND RATING IS NOT NULL
+ORDER BY "length" ASC,
+    TITLE ASC
+LIMIT 4;
+-- 3.29
+SELECT PAYMENT_ID,
+    AMOUNT,
+    PAYMENT_DATE
+FROM PAYMENT
+WHERE PAYMENT_DATE BETWEEN '2007-01-01' AND '2007-02-01'
+ORDER BY PAYMENT_DATE DESC
+LIMIT 3;
+-- 3.30
+SELECT PAYMENT_ID,
+    AMOUNT,
+    PAYMENT_DATE
+FROM PAYMENT
+WHERE PAYMENT_ID IN (
+        SELECT PAYMENT_ID
+        FROM PAYMENT
+        WHERE PAYMENT_DATE BETWEEN '2007-01-01' AND '2007-02-01'
+        ORDER BY PAYMENT_DATE DESC
+        LIMIT 3
+    )
+ORDER BY PAYMENT_DATE ASC
+LIMIT 3;
+-- 3.31
+SELECT DISTINCT RATING
+FROM FILM
+WHERE RATING IS NOT NULL
+ORDER BY RATING;
+-- 3.32
+SELECT DISTINCT DATE_PART('hour', RENTAL_DATE) AS HOUR
+FROM RENTAL
+ORDER BY HOUR;
+-- 3.33
+SELECT DISTINCT RENTAL_DURATION,
+    RENTAL_RATE
+FROM FILM
+ORDER BY RENTAL_DURATION;
+-- 3.34
+-- Because of the order of execution first the 'select distinct' is evaluated and afterwards there is no 1:1 mapping between first_name and last_name anymore if there were non-distinct combinations.
+-- 3.35
+SELECT DISTINCT RATING,
+    CASE
+        RATING
+        WHEN 'G' THEN 'General'
+        WHEN 'PG' THEN 'Parental Guidance Recommended'
+        WHEN 'PG-13' THEN 'Parents Strongly Cautioned'
+        WHEN 'R' THEN 'Restricted'
+        WHEN 'NC-17' THEN 'Adults Only'
+    END AS "rating description"
+FROM FILM
+WHERE RATING IS NOT NULL
+ORDER BY RATING;
+-- 3.36
+SELECT RENTAL_ID,
+    RENTAL_DATE,
+    RETURN_DATE,
+    CASE
+        WHEN RETURN_DATE IS NULL THEN 'Not Returned'
+        ELSE 'Returned'
+    END AS RETURN_STATUS
+FROM RENTAL
+ORDER BY RETURN_STATUS;
+-- or order by return_date nulls FIRST;
+--
+-- 3.37
+SELECT COUNTRY,
+    CASE
+        COUNTRY
+        WHEN 'Australia' THEN 1
+        WHEN 'United Kingdom' THEN 2
+        WHEN 'United States' THEN 3
+        ELSE COUNTRY_ID + 3
+    END AS SORT_ID
+FROM COUNTRY
+ORDER BY SORT_ID,
+    COUNTRY;
+-- official solution
+SELECT COUNTRY
+FROM COUNTRY
+ORDER BY CASE
+        COUNTRY
+        WHEN 'Australia' THEN 0
+        WHEN 'United Kingdom' THEN 1
+        WHEN 'United States' THEN 2
+        ELSE 3
+    END,
+    COUNTRY;
+-- 3.38
+SELECT FIRST_NAME,
+    LAST_NAME,
+    EMAIL
+FROM CUSTOMER
+ORDER BY RANDOM()
+LIMIT 5;
+-- 3.39
+SELECT RENTAL_ID,
+    RENTAL_DATE
+FROM RENTAL
+WHERE DATE_PART('month', RENTAL_DATE) = 6
+    AND DATE_PART('year', RENTAL_DATE) = 2005;
+SELECT RENTAL_ID,
+    RENTAL_DATE
+FROM RENTAL
+WHERE RENTAL_DATE BETWEEN '2005-06-01' AND '2005-06-30 24:00:00';
+SELECT RENTAL_ID,
+    RENTAL_DATE
+FROM RENTAL
+WHERE RENTAL_DATE >= '2005-06-01'
+    AND RENTAL_DATE < '2005-07-01';
+-- 3.40
+SELECT TITLE,
+    RENTAL_RATE,
+    "length",
+    RENTAL_RATE / "length" AS PER_MINUTE
+FROM FILM
+WHERE "length" IS NOT NULL
+    AND "length" > 0
+ORDER BY PER_MINUTE DESC
+LIMIT 5;
+-- 3.41
+SELECT FIRST_NAME
+FROM CUSTOMER
+WHERE FIRST_NAME SIMILAR TO '%A%A%';
+-- 3.42
+SELECT DISTINCT ON (CUSTOMER_ID) CUSTOMER_ID,
+    RENTAL_DATE
+FROM RENTAL
+ORDER BY CUSTOMER_ID,
+    RENTAL_DATE DESC;
+-- 3.43
+SELECT FIRST_NAME,
+    LAST_NAME,
+    EMAIL
+FROM CUSTOMER
+WHERE EMAIL <> FORMAT(
+        '%s.%s@sakilacustomer.org',
+        FIRST_NAME,
+        LAST_NAME
+    );

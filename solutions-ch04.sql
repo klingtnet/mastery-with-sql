@@ -1,0 +1,93 @@
+-- 4.1
+SELECT COUNT(*) AS CUSTOMERS,
+    COUNT(EMAIL) AS "customers with email"
+FROM CUSTOMER;
+-- 4.2
+SELECT COUNT(*) AS CUSTOMERS,
+    COUNT(EMAIL) AS "customers with email",
+    100.0 * COUNT(EMAIL) / COUNT(*) AS "% with email"
+FROM CUSTOMER;
+-- 4.3
+SELECT COUNT(DISTINCT CUSTOMER_ID)
+FROM PAYMENT;
+-- 4.4
+SELECT AVG(RETURN_DATE - RENTAL_DATE) AS "avg rental duration"
+FROM RENTAL;
+-- 4.5
+SELECT SUM(AMOUNT) AS TOTAL
+FROM PAYMENT;
+-- 4.6
+SELECT ACTOR_ID,
+    COUNT(FILM_ID) AS NUM_FILMS
+FROM FILM_ACTOR
+GROUP BY ACTOR_ID
+ORDER BY NUM_FILMS DESC;
+-- 4.7
+SELECT CUSTOMER_ID
+FROM RENTAL
+GROUP BY CUSTOMER_ID
+HAVING COUNT(*) > 40;
+-- 4.8
+SELECT DATE_PART('year', PAYMENT_DATE) AS YEAR,
+    DATE_PART('month', PAYMENT_DATE) AS MONTH,
+    STAFF_ID,
+    COUNT(*) AS NUM_PAYMENTS,
+    SUM(AMOUNT) AS PAYMENT_TOTAL,
+    AVG(AMOUNT) AS AVG_PAYMENT_AMOUNT
+FROM PAYMENT
+GROUP BY YEAR,
+    MONTH,
+    STAFF_ID;
+-- case expressions in aggregates
+SELECT COUNT(
+        CASE
+            WHEN RATING IN ('R', 'NC-17') THEN 1
+        ) AS ADULT_FILMS
+        FROM FILM;
+-- the same using postgres specific filter
+SELECT COUNT(*) FILTER (
+        WHERE RATING IN ('R', 'NC-17')
+    ) AS ADULT_FILMS
+FROM FILM;
+-- 4.9
+SELECT COUNT(*) FILTER (
+        WHERE RETURN_DATE - RENTAL_DATE < interval '3 days'
+    ) AS "lt 3 days",
+    COUNT(*) FILTER (
+        WHERE RETURN_DATE - RENTAL_DATE >= interval '3 days'
+    ) AS "gt 3 days",
+    COUNT(*) FILTER (
+        WHERE RETURN_DATE IS NULL
+    ) AS "never returned"
+FROM RENTAL;
+-- 4.10
+SELECT CASE
+        WHEN LENGTH BETWEEN 0 AND 59 THEN '0-1hours'
+        WHEN LENGTH BETWEEN 60 AND 119 THEN '1-2hours'
+        WHEN LENGTH BETWEEN 120 AND 179 THEN '2-3hours'
+        ELSE '3+hours'
+    END,
+    COUNT(*)
+FROM FILM
+GROUP BY 1
+ORDER BY 1;
+-- 4.11
+-- avg(length) will ignore null values but count(*) not, so the denomimator is too large for the variant using count.
+-- 4.12
+SELECT CUSTOMER_ID,
+    AVG(RETURN_DATE - RENTAL_DATE) AS AVG_RENT_DURATION
+FROM RENTAL
+GROUP BY CUSTOMER_ID
+ORDER BY 2 DESC;
+-- 4.13
+-- FEEDBACK: ask why the original solution requested to use bool_and ?
+SELECT CUSTOMER_ID
+FROM PAYMENT
+GROUP BY CUSTOMER_ID
+HAVING MIN(AMOUNT) > 2;
+-- 4.14
+SELECT RATING,
+    REPEAT('*', (COUNT(*) / 10)::int) AS "count/10"
+FROM FILM
+WHERE RATING IS NOT NULL
+GROUP BY RATING;
