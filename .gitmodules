@@ -1,0 +1,3 @@
+[submodule "mastery-with-sql"]
+	path = mastery-with-sql
+	url = git@github.com:neilwithdata/mastery-with-sql.git

@@ -1,0 +1,20 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:mastery-with-sql
+    environment:
+      POSTGRES_PASSWORD: mastery-with-sql
+    ports:
+      - "5432:5432"
+  pgweb:
+    container_name: pgweb
+    restart: always
+    image: sosedoff/pgweb:0.11.8
+    ports:
+      - "8081:8081"
+    links:
+      - postgres:postgres
+    environment:
+      - DATABASE_URL=postgres://postgres:mastery-with-sql@postgres:5432/?sslmode=disable
+    depends_on:
+      - postgres
