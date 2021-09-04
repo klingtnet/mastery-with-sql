@@ -9,7 +9,8 @@ WHERE customer_id IN (
                 SELECT min(date_trunc('day', rental_date))
                 FROM rental
             )
-    ) -- solution from the course:
+    );
+-- solution from the course:
 SELECT DISTINCT c.first_name,
     c.last_name
 FROM rental AS r

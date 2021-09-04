@@ -105,10 +105,11 @@ WHERE RATING IS NULL
     OR NOT (
         RATING = 'G'
         OR RATING = 'PG'
-    ) -- Note that 'ilike' is a postgres specific case-insenstive pattern match
-    -- Note that 'SIMILAR TO' allows so pattern match against regular expressions
-    -- https://www.postgresql.org/docs/current/functions-matching.html
-    -- 3.18
+    );
+-- Note that 'ilike' is a postgres specific case-insenstive pattern match
+-- Note that 'SIMILAR TO' allows so pattern match against regular expressions
+-- https://www.postgresql.org/docs/current/functions-matching.html
+-- 3.18
 SELECT TITLE,
     RATING
 FROM FILM
